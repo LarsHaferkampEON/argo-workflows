@@ -254,7 +254,7 @@ func (wfc *WorkflowController) Run(ctx context.Context, wfWorkers, workflowTTLWo
 		WithField("podCleanup", podCleanupWorkers).
 		Info("Current Worker Numbers")
 
-	wfc.wfInformer = util.NewWorkflowInformer(wfc.dynamicInterface, wfc.GetManagedNamespace(), workflowResyncPeriod, wfc.tweakListOptions, indexers)
+	wfc.wfInformer = util.NewWorkflowInformer(wfc.dynamicInterface, wfc.GetManagedNamespace(), workflowResyncPeriod, wfc.tweakListRequestListOptions, wfc.tweakWatchRequestListOptions, indexers)
 	wfc.wftmplInformer = informer.NewTolerantWorkflowTemplateInformer(wfc.dynamicInterface, workflowTemplateResyncPeriod, wfc.managedNamespace)
 	wfc.wfTaskSetInformer = wfc.newWorkflowTaskSetInformer()
 	wfc.artGCTaskInformer = wfc.newArtGCTaskInformer()
@@ -804,7 +804,13 @@ func (wfc *WorkflowController) enqueueWfFromPodLabel(obj interface{}) error {
 	return nil
 }
 
-func (wfc *WorkflowController) tweakListOptions(options *metav1.ListOptions) {
+func (wfc *WorkflowController) tweakListRequestListOptions(options *metav1.ListOptions) {
+	labelSelector := labels.NewSelector().
+		Add(util.InstanceIDRequirement(wfc.Config.InstanceID))
+	options.LabelSelector = labelSelector.String()
+}
+
+func (wfc *WorkflowController) tweakWatchRequestListOptions(options *metav1.ListOptions) {
 	labelSelector := labels.NewSelector().
 		Add(util.InstanceIDRequirement(wfc.Config.InstanceID))
 	options.LabelSelector = labelSelector.String()
