@@ -403,7 +403,7 @@ func (wfc *WorkflowController) runConfigMapWatcher(stopCh <-chan struct{}) {
 		case event := <-retryWatcher.ResultChan():
 			cm, ok := event.Object.(*apiv1.ConfigMap)
 			if !ok {
-				log.Errorf("invalid config map object received in config watcher. Ignored processing")
+				log.Debugf("invalid config map object received in config watcher. Ignored processing")
 				continue
 			}
 			log.Debugf("received config map %s/%s update", cm.Namespace, cm.Name)
